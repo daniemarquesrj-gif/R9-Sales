@@ -1,6 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { Campaign, Sale, LeaderboardEntry, Profile, PaymentMethod, SaleStatus } from '../types';
 import { getSupabaseClient, LocalSyncEngine, INITIAL_CAMPAIGNS, INITIAL_SALES } from '../lib/supabase';
+import { 
+  normalizeRemoteSale, 
+  buildR9SalePayload, 
+  buildStandardSalePayload, 
+  logSupabaseError 
+} from '../lib/salesMapper';
 import { useAuth } from './AuthContext';
 import confetti from 'canvas-confetti';
 
@@ -78,14 +84,23 @@ export const SalesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           LocalSyncEngine.saveCampaigns(remoteCampaigns as Campaign[]);
         }
 
-        const { data: remoteSales } = await client
+        const { data: remoteSales, error: salesError } = await client
           .from('sales')
           .select('*')
           .order('created_at', { ascending: false });
 
-        if (remoteSales && remoteSales.length > 0) {
-          setSales(remoteSales as Sale[]);
-          LocalSyncEngine.saveSales(remoteSales as Sale[]);
+        if (salesError) {
+          logSupabaseError('loadData - Consulta tabela sales', salesError);
+        } else if (remoteSales && remoteSales.length > 0) {
+          try {
+            const normalized = remoteSales.map(normalizeRemoteSale);
+            setSales(normalized);
+            LocalSyncEngine.saveSales(normalized);
+          } catch (normErr) {
+            console.error('Erro ao normalizar vendas do Supabase:', normErr);
+            setSales(remoteSales as Sale[]);
+            LocalSyncEngine.saveSales(remoteSales as Sale[]);
+          }
         }
       } catch (err) {
         console.warn('Supabase sales load fallback to local:', err);
@@ -247,11 +262,51 @@ export const SalesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
 
     const client = getSupabaseClient();
+    let supabaseErrorDetails: string | undefined;
+
     if (client) {
       try {
-        await client.from('sales').insert(newSale);
-      } catch (err) {
-        console.warn('Supabase insert sale fallback:', err);
+        // Tentativa 1: Estrutura oficial da tabela R9 Sales
+        const r9Payload = buildR9SalePayload(newSale);
+        console.info('📤 [Supabase Sales] Executando .insert() com formato R9:', r9Payload);
+        
+        const { data: insertedData, error: insertErr } = await client
+          .from('sales')
+          .insert(r9Payload)
+          .select();
+
+        if (insertErr) {
+          logSupabaseError('addSale - Formato R9 (tentativa 1)', insertErr, r9Payload);
+          supabaseErrorDetails = insertErr.message;
+
+          // Se o erro foi por incompatibilidade de colunas (PGRST204 ou 42703), tenta o formato alternativo
+          if (
+            insertErr.code === 'PGRST204' || 
+            insertErr.code === '42703' ||
+            insertErr.message?.includes('column') ||
+            insertErr.message?.includes('schema cache')
+          ) {
+            console.warn('🔄 Detectada divergência de colunas. Tentando insert com formato padrão alternativo...');
+            const standardPayload = buildStandardSalePayload(newSale);
+            const { data: altData, error: altErr } = await client
+              .from('sales')
+              .insert(standardPayload)
+              .select();
+
+            if (altErr) {
+              logSupabaseError('addSale - Formato Padrão (tentativa 2)', altErr, standardPayload);
+              supabaseErrorDetails = `${insertErr.message} | ${altErr.message}`;
+            } else {
+              console.info('✅ [Supabase Sales] Venda inserida com sucesso (Formato Padrão):', altData);
+              supabaseErrorDetails = undefined;
+            }
+          }
+        } else {
+          console.info('✅ [Supabase Sales] Venda inserida com sucesso no Supabase:', insertedData);
+        }
+      } catch (err: any) {
+        console.error('💥 [Supabase Sales] Exceção inesperada no insert:', err);
+        supabaseErrorDetails = err.message || 'Erro de conexão com Supabase';
       }
     }
 
@@ -271,7 +326,11 @@ export const SalesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     triggerConfetti();
 
-    return { success: true, sale: newSale };
+    return { 
+      success: true, 
+      sale: newSale,
+      error: supabaseErrorDetails
+    };
   };
 
   // Update Sale (Admin editing registered sales)
@@ -308,9 +367,18 @@ export const SalesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const client = getSupabaseClient();
     if (client && updatedItem) {
       try {
-        await client.from('sales').update(updatedItem).eq('id', saleId);
+        const r9Payload = buildR9SalePayload(updatedItem);
+        const { error: updateErr } = await client.from('sales').update(r9Payload).eq('id', saleId);
+        if (updateErr) {
+          logSupabaseError('updateSale - Formato R9', updateErr, r9Payload);
+          const standardPayload = buildStandardSalePayload(updatedItem);
+          const { error: altErr } = await client.from('sales').update(standardPayload).eq('id', saleId);
+          if (altErr) {
+            logSupabaseError('updateSale - Formato Padrão', altErr, standardPayload);
+          }
+        }
       } catch (err) {
-        console.warn('Supabase update sale fallback:', err);
+        console.error('💥 [Supabase Sales] Exceção no update:', err);
       }
     }
 
@@ -326,9 +394,12 @@ export const SalesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const client = getSupabaseClient();
     if (client) {
       try {
-        await client.from('sales').delete().eq('id', saleId);
+        const { error: delErr } = await client.from('sales').delete().eq('id', saleId);
+        if (delErr) {
+          logSupabaseError('deleteSale', delErr, { saleId });
+        }
       } catch (err) {
-        console.warn('Supabase delete sale fallback:', err);
+        console.error('💥 [Supabase Sales] Exceção no delete:', err);
       }
     }
 
@@ -341,9 +412,12 @@ export const SalesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const client = getSupabaseClient();
     if (client) {
       try {
-        await client.from('sales').delete().neq('id', 'dummy_never_match');
+        const { error: clearErr } = await client.from('sales').delete().neq('id', 'dummy_never_match');
+        if (clearErr) {
+          logSupabaseError('clearAllSales', clearErr);
+        }
       } catch (err) {
-        console.warn('Supabase clear all sales fallback:', err);
+        console.error('💥 [Supabase Sales] Exceção no clearAllSales:', err);
       }
     }
     return { success: true };
@@ -363,9 +437,12 @@ export const SalesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const client = getSupabaseClient();
     if (client) {
       try {
-        await client.from('sales').update({ status }).eq('id', saleId);
+        const { error: statusErr } = await client.from('sales').update({ status }).eq('id', saleId);
+        if (statusErr) {
+          logSupabaseError('updateSaleStatus', statusErr, { saleId, status });
+        }
       } catch (err) {
-        console.warn('Supabase update sale status fallback:', err);
+        console.error('💥 [Supabase Sales] Exceção no updateSaleStatus:', err);
       }
     }
 

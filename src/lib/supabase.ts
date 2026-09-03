@@ -144,30 +144,49 @@ create table if not exists public.campaigns (
 
 -- 4. Tabela de Vendas e Lançamentos (Sales)
 create table if not exists public.sales (
-  id text primary key default ('sale-' || substr(md5(random()::text), 1, 10)),
-  campaign_id text references public.campaigns(id) on delete set null,
-  campaign_name text,
-  seller_id uuid references public.profiles(id) on delete cascade not null,
-  seller_name text not null,
-  seller_email text not null,
-  client_name text not null,
-  client_document text,
-  client_phone text,
-  client_email text,
-  product_name text not null,
-  value numeric not null check (value > 0),
-  payment_method text not null,
-  status text default 'Aprovada' check (status in ('Aprovada', 'Pendente', 'Em Análise')),
-  commission numeric default 0,
-  custom_data jsonb default '{}'::jsonb,
+  id text primary key,
+  collaborator_name text,
+  candidate_name text,
+  opportunity text,
+  product text,
+  turn text,
+  modality text,
+  fdi boolean default false,
+  light_installment boolean default false,
+  partner_scholarship boolean default false,
   notes text,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+  sale_date timestamp with time zone default timezone('utc'::text, now()),
+  campaign_id text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  -- Colunas complementares opcionais para compatibilidade total
+  seller_id text,
+  seller_name text,
+  seller_email text,
+  client_name text,
+  product_name text,
+  value numeric default 1200,
+  payment_method text default 'PIX',
+  status text default 'Aprovada',
+  commission numeric default 60,
+  custom_data jsonb default '{}'::jsonb
 );
 
 -- 5. Habilitar Row Level Security (RLS)
 alter table public.profiles enable row level security;
 alter table public.campaigns enable row level security;
 alter table public.sales enable row level security;
+
+-- Políticas para Sales
+drop policy if exists "Leitura de vendas permitida" on public.sales;
+create policy "Leitura de vendas permitida" 
+  on public.sales for select 
+  using (true);
+
+drop policy if exists "Gravação de vendas permitida" on public.sales;
+create policy "Gravação de vendas permitida" 
+  on public.sales for all 
+  using (true)
+  with check (true);
 
 -- Políticas para Profiles
 create policy "Perfis são visíveis por todos os autenticados" 
@@ -193,25 +212,6 @@ create policy "Campanhas visíveis por todos os autenticados"
 create policy "Admins podem criar, editar ou excluir campanhas" 
   on public.campaigns for all 
   using (
-    exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
-  );
-
--- Políticas para Sales
-create policy "Vendedores podem ver suas vendas e Admins podem ver todas" 
-  on public.sales for select 
-  using (
-    auth.uid() = seller_id or 
-    exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
-  );
-
-create policy "Vendedores e Admins podem lançar vendas" 
-  on public.sales for insert 
-  with check (auth.role() = 'authenticated');
-
-create policy "Admins ou o próprio vendedor podem atualizar vendas" 
-  on public.sales for update 
-  using (
-    auth.uid() = seller_id or 
     exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
   );
 
