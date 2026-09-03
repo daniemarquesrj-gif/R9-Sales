@@ -1,8 +1,17 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { Profile, Campaign, Sale } from '../types';
+import { 
+  supabase, 
+  getSupabaseClient, 
+  setSupabaseCredentials, 
+  isSupabaseConfigured,
+  SUPABASE_CONFIG_KEY 
+} from '../supabase';
+
+// Re-export shared Supabase client and helpers
+export { supabase, getSupabaseClient, setSupabaseCredentials, isSupabaseConfigured, SUPABASE_CONFIG_KEY };
 
 // Storage keys
-const SUPABASE_CONFIG_KEY = 'salesflow_supabase_config';
 const LOCAL_PROFILES_KEY = 'salesflow_profiles_v4';
 const LOCAL_CAMPAIGNS_KEY = 'salesflow_campaigns_v1';
 const LOCAL_SALES_KEY = 'salesflow_sales_v3';
@@ -232,32 +241,6 @@ alter publication supabase_realtime add table public.profiles;
 alter publication supabase_realtime add table public.campaigns;
 alter publication supabase_realtime add table public.sales;
 `;
-
-// Helper to get Supabase client
-export function getSupabaseClient(): SupabaseClient | null {
-  const envUrl = import.meta.env.VITE_SUPABASE_URL;
-  const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  
-  let savedConfig: { url: string; anonKey: string } | null = null;
-  try {
-    const raw = localStorage.getItem(SUPABASE_CONFIG_KEY);
-    if (raw) savedConfig = JSON.parse(raw);
-  } catch (e) {
-    console.error('Error parsing stored supabase config', e);
-  }
-
-  const url = savedConfig?.url || envUrl;
-  const key = savedConfig?.anonKey || envKey;
-
-  if (url && key && url !== 'https://your-project.supabase.co' && key !== 'your-anon-key') {
-    try {
-      return createClient(url, key);
-    } catch (err) {
-      console.warn('Could not initialize Supabase client:', err);
-    }
-  }
-  return null;
-}
 
 // Local Storage Sync Engine for seamless, 100% resilient operation
 export class LocalSyncEngine {

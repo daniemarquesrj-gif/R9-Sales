@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Profile, UserRole, SupabaseConfig } from '../types';
-import { getSupabaseClient, LocalSyncEngine, INITIAL_PROFILES } from '../lib/supabase';
+import { getSupabaseClient, setSupabaseCredentials, LocalSyncEngine, INITIAL_PROFILES } from '../lib/supabase';
 
 interface AuthContextType {
   currentUser: Profile | null;
@@ -344,6 +344,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateSupabaseCredentials = async (url: string, key: string) => {
     try {
       localStorage.setItem('salesflow_supabase_config', JSON.stringify({ url, anonKey: key }));
+      setSupabaseCredentials(url, key);
       setSupabaseConfig({
         url,
         anonKey: key,

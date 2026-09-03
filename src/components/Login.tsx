@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { supabase } from '../supabase.js';
+import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
 import { Shield, UserCheck, Database } from 'lucide-react';
 import { SupabaseSetupModal } from './common/SupabaseSetupModal';
