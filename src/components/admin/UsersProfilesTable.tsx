@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { UserRole } from '../../types';
+import { CreateUserModal } from './CreateUserModal';
 import { 
   Users, 
   Search, 
@@ -14,7 +15,10 @@ import {
   ChevronLeft,
   LogOut,
   Check,
-  User
+  User,
+  UserPlus,
+  Trash2,
+  AlertTriangle
 } from 'lucide-react';
 
 interface UsersProfilesTableProps {
@@ -22,12 +26,16 @@ interface UsersProfilesTableProps {
 }
 
 export const UsersProfilesTable: React.FC<UsersProfilesTableProps> = ({ onBackToPlanner }) => {
-  const { profiles, currentUser, updateUserRole, refreshProfiles, switchUser, signOut } = useAuth();
+  const { profiles, currentUser, updateUserRole, refreshProfiles, deleteUser, resetToSingleUser, signOut, switchUser } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | 'admin' | 'seller'>('all');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<{ id: string; name: string } | null>(null);
 
   const isAdmin = currentUser?.role === 'admin';
 
@@ -91,6 +99,28 @@ export const UsersProfilesTable: React.FC<UsersProfilesTableProps> = ({ onBackTo
       setToastMessage(result.error || 'Erro ao alterar função.');
       setTimeout(() => setToastMessage(null), 4000);
     }
+  };
+
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    setDeletingId(userId);
+    const result = await deleteUser(userId);
+    setDeletingId(null);
+    setUserToDelete(null);
+
+    if (result.success) {
+      setToastMessage(`Usuário ${userName} foi removido com sucesso.`);
+      setTimeout(() => setToastMessage(null), 3500);
+    } else {
+      setToastMessage(result.error || 'Erro ao remover usuário.');
+      setTimeout(() => setToastMessage(null), 4000);
+    }
+  };
+
+  const handleResetToSingleUser = async () => {
+    await resetToSingleUser();
+    setShowResetConfirm(false);
+    setToastMessage('Todos os outros usuários foram removidos. Apenas sua conta permanece ativa.');
+    setTimeout(() => setToastMessage(null), 4000);
   };
 
   const getInitials = (name: string) => {
@@ -217,14 +247,35 @@ export const UsersProfilesTable: React.FC<UsersProfilesTableProps> = ({ onBackTo
           </div>
         </div>
 
-        <button
-          onClick={handleRefresh}
-          disabled={isRefreshing}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs transition-colors cursor-pointer self-start sm:self-center"
-        >
-          <RotateCw className={`w-3.5 h-3.5 text-slate-500 ${isRefreshing ? 'animate-spin' : ''}`} />
-          <span>Atualizar Lista</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-center">
+          <button
+            onClick={() => setIsCreateUserOpen(true)}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
+          >
+            <UserPlus className="w-3.5 h-3.5" />
+            <span>Cadastrar Usuário</span>
+          </button>
+
+          {profiles.length > 1 && (
+            <button
+              onClick={() => setShowResetConfirm(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
+              title="Excluir todos os outros usuários e manter apenas a minha conta"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-red-600" />
+              <span>Deixar Só Eu</span>
+            </button>
+          )}
+
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
+          >
+            <RotateCw className={`w-3.5 h-3.5 text-slate-500 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span>Atualizar</span>
+          </button>
+        </div>
       </div>
 
       {/* 3 Metric Cards */}
@@ -415,6 +466,18 @@ export const UsersProfilesTable: React.FC<UsersProfilesTableProps> = ({ onBackTo
                         <span>Membro</span>
                       </button>
                     </div>
+
+                    {/* Individual Delete Button (only for other users) */}
+                    {profile.id !== currentUser?.id && (
+                      <button
+                        onClick={() => setUserToDelete({ id: profile.id, name: profile.name })}
+                        disabled={deletingId === profile.id}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors cursor-pointer"
+                        title={`Remover usuário ${profile.name}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -422,6 +485,78 @@ export const UsersProfilesTable: React.FC<UsersProfilesTableProps> = ({ onBackTo
           )}
         </div>
       </div>
+
+      {/* Modal: Cadastrar Novo Usuário */}
+      {isCreateUserOpen && (
+        <CreateUserModal onClose={() => setIsCreateUserOpen(false)} />
+      )}
+
+      {/* Modal: Confirmar exclusão de usuário único */}
+      {userToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 max-w-sm w-full shadow-xl space-y-4 animate-in fade-in zoom-in-95">
+            <div className="w-12 h-12 rounded-xl bg-red-50 text-red-600 flex items-center justify-center mx-auto">
+              <Trash2 className="w-6 h-6" />
+            </div>
+            <div className="text-center">
+              <h4 className="text-base font-bold text-slate-900">Remover Usuário</h4>
+              <p className="text-xs text-slate-500 mt-1">
+                Tem certeza que deseja excluir o usuário <strong className="text-slate-800">{userToDelete.name}</strong>? Esta ação não pode ser desfeita.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setUserToDelete(null)}
+                className="flex-1 px-4 py-2 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDeleteUser(userToDelete.id, userToDelete.name)}
+                disabled={deletingId === userToDelete.id}
+                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
+              >
+                {deletingId === userToDelete.id ? 'Removendo...' : 'Excluir'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Confirmar Reset Geral (Deixar só eu) */}
+      {showResetConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 max-w-md w-full shadow-xl space-y-4 animate-in fade-in zoom-in-95">
+            <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+            <div className="text-center">
+              <h4 className="text-base font-bold text-slate-900">Limpar outros usuários?</h4>
+              <p className="text-xs text-slate-500 mt-1">
+                Esta ação removerá todos os outros membros cadastrados e manterá exclusivamente a sua conta de Administrador ativa (<strong className="text-slate-800">{currentUser?.name || 'Daniel Marques'}</strong>).
+              </p>
+            </div>
+            <div className="flex items-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowResetConfirm(false)}
+                className="flex-1 px-4 py-2 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleResetToSingleUser}
+                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
+              >
+                Sim, Limpar e Deixar Só Eu
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

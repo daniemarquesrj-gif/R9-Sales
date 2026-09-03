@@ -102,7 +102,7 @@ export const R9Dashboard: React.FC = () => {
   const graduacaoCount = sales.filter(s => getSaleProductType(s) === 'Graduação').length;
   const posCount = sales.filter(s => getSaleProductType(s) === 'Pós Graduação').length;
   const tecnicoCount = sales.filter(s => getSaleProductType(s) === 'Curso Técnico').length;
-  const totalSalesCount = sales.length || 9;
+  const totalSalesCount = sales.length;
 
   // Computed today's sales count (Boletos do Dia)
   const todayDateObj = new Date();
@@ -110,11 +110,11 @@ export const R9Dashboard: React.FC = () => {
   const boletosDoDiaCount = sales.filter(s => {
     const saleDate = s.custom_data?.sale_date;
     if (saleDate) {
-      return saleDate === todayFormatted || saleDate === '02/09/2026';
+      return saleDate === todayFormatted;
     }
     const d = new Date(s.created_at);
     const dStr = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
-    return dStr === todayFormatted || dStr === '02/09/2026';
+    return dStr === todayFormatted;
   }).length;
 
   // Format initials and username
@@ -240,12 +240,12 @@ export const R9Dashboard: React.FC = () => {
             </div>
           )}
 
-          {/* User profile with quick account switch to test Admin and Member roles */}
+          {/* User profile */}
           <div className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
               className="flex items-center gap-2 px-2.5 py-1 rounded-lg border border-gray-200 hover:bg-gray-50 text-xs text-gray-700 transition-colors cursor-pointer"
-              title="Trocar usuário para testar papéis (Admin / Membro)"
+              title="Informações da Conta"
             >
               <div className="w-6 h-6 rounded-full bg-[#00478f] text-white font-bold text-[10px] flex items-center justify-center">
                 {userInitials}
@@ -254,39 +254,53 @@ export const R9Dashboard: React.FC = () => {
               <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${isActualAdmin ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'}`}>
                 {isActualAdmin ? 'Admin' : 'Membro'}
               </span>
-              <ChevronDown className="w-3 h-3 text-gray-400" />
+              {profiles.length > 1 && <ChevronDown className="w-3 h-3 text-gray-400" />}
             </button>
 
             {showUserMenu && (
-              <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-200 p-2 z-50 animate-in fade-in zoom-in-95 duration-100 space-y-1 text-xs">
+              <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-200 p-2.5 z-50 animate-in fade-in zoom-in-95 duration-100 space-y-2 text-xs">
                 <div className="px-2 py-1.5 border-b border-gray-100">
-                  <p className="text-[10px] uppercase font-bold text-gray-400">Alternar Usuário de Teste</p>
-                  <p className="text-[11px] text-gray-500">Selecione para alternar entre contas e verificar a separação de cargos:</p>
+                  <p className="text-[10px] uppercase font-bold text-gray-400">Usuário Conectado</p>
+                  <p className="font-bold text-gray-900 text-sm mt-0.5">{userName}</p>
+                  <p className="text-[11px] text-gray-500">{currentUser?.email}</p>
+                  <div className="mt-1.5 flex items-center gap-1.5">
+                    <span className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-blue-700 rounded-full font-bold text-[10px]">
+                      {isActualAdmin ? 'Administrador Geral' : 'Membro'}
+                    </span>
+                  </div>
                 </div>
-                <div className="max-h-56 overflow-y-auto space-y-0.5">
-                  {profiles.map(p => (
-                    <button
-                      key={p.id}
-                      onClick={() => {
-                        switchUser(p);
-                        setShowUserMenu(false);
-                      }}
-                      className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-left transition-colors cursor-pointer ${
-                        currentUser?.id === p.id ? 'bg-blue-50 text-blue-800 font-semibold' : 'hover:bg-gray-100 text-gray-700'
-                      }`}
-                    >
-                      <div>
-                        <p className="font-medium text-xs">{p.name}</p>
-                        <p className="text-[10px] text-gray-400">{p.email}</p>
-                      </div>
-                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
-                        p.role === 'admin' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'
-                      }`}>
-                        {p.role === 'admin' ? 'Admin' : 'Membro'}
-                      </span>
-                    </button>
-                  ))}
-                </div>
+
+                {profiles.length > 1 && (
+                  <>
+                    <div className="px-2 pt-1">
+                      <p className="text-[10px] uppercase font-bold text-gray-400">Alternar Usuário</p>
+                    </div>
+                    <div className="max-h-48 overflow-y-auto space-y-0.5">
+                      {profiles.map(p => (
+                        <button
+                          key={p.id}
+                          onClick={() => {
+                            switchUser(p);
+                            setShowUserMenu(false);
+                          }}
+                          className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-left transition-colors cursor-pointer ${
+                            currentUser?.id === p.id ? 'bg-blue-50 text-blue-800 font-semibold' : 'hover:bg-gray-100 text-gray-700'
+                          }`}
+                        >
+                          <div>
+                            <p className="font-medium text-xs">{p.name}</p>
+                            <p className="text-[10px] text-gray-400">{p.email}</p>
+                          </div>
+                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
+                            p.role === 'admin' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'
+                          }`}>
+                            {p.role === 'admin' ? 'Admin' : 'Membro'}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>

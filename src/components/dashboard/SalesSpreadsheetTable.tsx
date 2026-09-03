@@ -51,13 +51,15 @@ export const SalesSpreadsheetTable: React.FC<SalesSpreadsheetTableProps> = ({
   onOpenNewSaleModal,
   onlyToday = false
 }) => {
-  const { sales, deleteSale, updateSaleStatus } = useSales();
+  const { sales, deleteSale, updateSaleStatus, clearAllSales } = useSales();
   const { currentUser } = useAuth();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [selectedProductFilter, setSelectedProductFilter] = useState<'Todos' | MainProductType>('Todos');
+  const [showClearSalesConfirm, setShowClearSalesConfirm] = useState(false);
+  const [isClearingSales, setIsClearingSales] = useState(false);
   
   // Excel-like Column Filters
   const [columnFilters, setColumnFilters] = useState<ColumnFilterState>({});
@@ -494,6 +496,19 @@ export const SalesSpreadsheetTable: React.FC<SalesSpreadsheetTableProps> = ({
             <span className="font-bold text-gray-800">{processedRows.length}</span> registros
           </div>
 
+          {/* Limpar Vendas (Exclusivo Administrador) */}
+          {isAdmin && sales.length > 0 && (
+            <button
+              id="clear-sales-btn"
+              onClick={() => setShowClearSalesConfirm(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+              title="Limpar todos os lançamentos e zerar a planilha"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-red-600" />
+              <span>Limpar Vendas</span>
+            </button>
+          )}
+
           {/* Export to CSV/Excel */}
           <button
             id="export-excel-btn"
@@ -799,16 +814,38 @@ export const SalesSpreadsheetTable: React.FC<SalesSpreadsheetTableProps> = ({
             <tbody className="divide-y divide-gray-200">
               {processedRows.length === 0 ? (
                 <tr>
-                  <td colSpan={isAdmin ? 12 : 11} className="py-12 text-center text-gray-400 bg-white">
-                    <div className="flex flex-col items-center justify-center space-y-2">
-                      <FileSpreadsheet className="w-8 h-8 text-gray-300" />
-                      <p className="text-xs font-medium text-gray-500">Nenhum lançamento encontrado na planilha com os filtros atuais.</p>
-                      <button
-                        onClick={clearAllFilters}
-                        className="text-xs text-blue-600 hover:underline font-semibold"
-                      >
-                        Limpar todos os filtros
-                      </button>
+                  <td colSpan={isAdmin ? 12 : 11} className="py-14 text-center text-gray-400 bg-white">
+                    <div className="flex flex-col items-center justify-center space-y-2.5 max-w-sm mx-auto">
+                      <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-500 flex items-center justify-center">
+                        <FileSpreadsheet className="w-6 h-6" />
+                      </div>
+                      {sales.length === 0 ? (
+                        <>
+                          <p className="text-sm font-bold text-gray-800">Planilha de Vendas Zerada</p>
+                          <p className="text-xs text-gray-500">
+                            Nenhuma venda cadastrada no sistema. Utilize o botão abaixo para lançar novos registros.
+                          </p>
+                          {onOpenNewSaleModal && (
+                            <button
+                              onClick={onOpenNewSaleModal}
+                              className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 bg-[#0052cc] hover:bg-[#00478f] text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+                            >
+                              <Plus className="w-4 h-4" />
+                              <span>Lançar Nova Venda</span>
+                            </button>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-xs font-semibold text-gray-700">Nenhum lançamento encontrado na planilha com os filtros atuais.</p>
+                          <button
+                            onClick={clearAllFilters}
+                            className="text-xs text-blue-600 hover:underline font-semibold cursor-pointer"
+                          >
+                            Limpar todos os filtros
+                          </button>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -1038,6 +1075,45 @@ export const SalesSpreadsheetTable: React.FC<SalesSpreadsheetTableProps> = ({
         sale={editingSale}
         onClose={() => setEditingSale(null)}
       />
+
+      {/* MODAL DE CONFIRMAÇÃO PARA LIMPAR VENDAS */}
+      {showClearSalesConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95">
+            <div className="w-12 h-12 rounded-xl bg-red-50 text-red-600 flex items-center justify-center mx-auto">
+              <Trash2 className="w-6 h-6" />
+            </div>
+            <div className="text-center">
+              <h4 className="text-base font-bold text-gray-900">Limpar Todas as Vendas?</h4>
+              <p className="text-xs text-gray-500 mt-1">
+                Esta ação removerá todos os lançamentos cadastrados na planilha e no banco de dados local. A planilha ficará completamente zerada para novos registros.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowClearSalesConfirm(false)}
+                className="flex-1 px-4 py-2 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 hover:bg-gray-50 cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  setIsClearingSales(true);
+                  await clearAllSales();
+                  setIsClearingSales(false);
+                  setShowClearSalesConfirm(false);
+                }}
+                disabled={isClearingSales}
+                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
+              >
+                {isClearingSales ? 'Limpando...' : 'Sim, Limpar Todas'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

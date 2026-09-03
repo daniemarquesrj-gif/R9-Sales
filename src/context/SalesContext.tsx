@@ -28,6 +28,7 @@ interface SalesContextType {
   }) => Promise<{ success: boolean; sale?: Sale; error?: string }>;
   updateSale: (saleId: string, updatedData: Partial<Sale>) => Promise<{ success: boolean; error?: string }>;
   deleteSale: (saleId: string) => Promise<{ success: boolean; error?: string }>;
+  clearAllSales: () => Promise<{ success: boolean; error?: string }>;
   updateSaleStatus: (saleId: string, status: SaleStatus) => Promise<{ success: boolean; error?: string }>;
   createCampaign: (campaignData: Omit<Campaign, 'id' | 'created_at'>) => Promise<{ success: boolean; campaign?: Campaign; error?: string }>;
   toggleCampaignStatus: (campaignId: string) => Promise<{ success: boolean; error?: string }>;
@@ -334,6 +335,20 @@ export const SalesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return { success: true };
   };
 
+  const clearAllSales = async () => {
+    setSales([]);
+    LocalSyncEngine.clearAllSales();
+    const client = getSupabaseClient();
+    if (client) {
+      try {
+        await client.from('sales').delete().neq('id', 'dummy_never_match');
+      } catch (err) {
+        console.warn('Supabase clear all sales fallback:', err);
+      }
+    }
+    return { success: true };
+  };
+
   const updateSaleStatus = async (saleId: string, status: SaleStatus) => {
     const updated = sales.map(s => {
       if (s.id === saleId) {
@@ -494,6 +509,7 @@ export const SalesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         addSale,
         updateSale,
         deleteSale,
+        clearAllSales,
         updateSaleStatus,
         createCampaign,
         toggleCampaignStatus,

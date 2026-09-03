@@ -13,6 +13,8 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   updateUserRole: (userId: string, newRole: UserRole) => Promise<{ success: boolean; error?: string }>;
   createUserByAdmin: (data: { name: string; email: string; role: UserRole; phone?: string; target_monthly?: number }) => Promise<{ success: boolean; error?: string }>;
+  deleteUser: (userId: string) => Promise<{ success: boolean; error?: string }>;
+  resetToSingleUser: () => Promise<void>;
   switchUser: (profile: Profile) => void;
   updateSupabaseCredentials: (url: string, key: string) => Promise<{ success: boolean; error?: string }>;
   refreshProfiles: () => Promise<void>;
@@ -301,6 +303,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Excluir usuário (apenas outros membros, nunca a si mesmo)
+  const deleteUser = async (userId: string) => {
+    if (currentUser?.id === userId) {
+      return { success: false, error: 'Você não pode excluir sua própria conta de administrador.' };
+    }
+    try {
+      const client = getSupabaseClient();
+      if (client) {
+        try {
+          await client.from('profiles').delete().eq('id', userId);
+        } catch (supErr) {
+          console.warn('Could not delete user in Supabase:', supErr);
+        }
+      }
+      const updated = profiles.filter(p => p.id !== userId);
+      setProfiles(updated);
+      LocalSyncEngine.saveProfiles(updated);
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Erro ao excluir usuário.' };
+    }
+  };
+
+  // Redefinir para manter apenas o usuário atual (Daniel Marques)
+  const resetToSingleUser = async () => {
+    LocalSyncEngine.resetUsersToAdminOnly();
+    const single = LocalSyncEngine.getProfiles();
+    setProfiles(single);
+    const user = LocalSyncEngine.getCurrentUser();
+    setCurrentUser(user);
+  };
+
   // Switch between profiles for quick testing/demoing
   const switchUser = (profile: Profile) => {
     setCurrentUser(profile);
@@ -354,6 +388,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signOut,
         updateUserRole,
         createUserByAdmin,
+        deleteUser,
+        resetToSingleUser,
         switchUser,
         updateSupabaseCredentials,
         refreshProfiles,

@@ -3,111 +3,23 @@ import { Profile, Campaign, Sale } from '../types';
 
 // Storage keys
 const SUPABASE_CONFIG_KEY = 'salesflow_supabase_config';
-const LOCAL_PROFILES_KEY = 'salesflow_profiles_v2';
+const LOCAL_PROFILES_KEY = 'salesflow_profiles_v4';
 const LOCAL_CAMPAIGNS_KEY = 'salesflow_campaigns_v1';
-const LOCAL_SALES_KEY = 'salesflow_sales_v1';
-const LOCAL_CURRENT_USER_KEY = 'salesflow_current_user_v2';
+const LOCAL_SALES_KEY = 'salesflow_sales_v3';
+const LOCAL_CURRENT_USER_KEY = 'salesflow_current_user_v4';
 
-// Initial seed data
+// Initial seed data: apenas o usuário administrador (Daniel Marques)
 export const INITIAL_PROFILES: Profile[] = [
   {
     id: 'usr-estacio-daniel',
-    name: 'daniel.marques',
-    email: 'daniel.marques@estacio.br',
+    name: 'Daniel Marques',
+    email: 'danie.marques.rj@gmail.com',
     role: 'admin',
     avatar_url: '',
-    created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+    created_at: new Date().toISOString(),
     status: 'active',
     phone: '(21) 98765-4321',
     target_monthly: 0,
-  },
-  {
-    id: 'usr-estacio-guilherme',
-    name: 'guilherme.dsribeiro',
-    email: 'guilherme.dsribeiro@estacio.br',
-    role: 'seller',
-    avatar_url: '',
-    created_at: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
-    status: 'active',
-    phone: '(21) 99123-8877',
-    target_monthly: 5,
-  },
-  {
-    id: 'usr-estacio-kathlen',
-    name: 'kathlen.paulino',
-    email: 'kathlen.paulino@estacio.br',
-    role: 'seller',
-    avatar_url: '',
-    created_at: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
-    status: 'active',
-    phone: '(21) 98456-1122',
-    target_monthly: 5,
-  },
-  {
-    id: 'usr-estacio-marcello',
-    name: 'marcello.oliveira',
-    email: 'marcello.oliveira@estacio.br',
-    role: 'seller',
-    avatar_url: '',
-    created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-    status: 'active',
-    phone: '(21) 97654-3344',
-    target_monthly: 5,
-  },
-  {
-    id: 'usr-estacio-lucas',
-    name: 'lucas.ferreira',
-    email: 'lucas.ferreira@estacio.br',
-    role: 'seller',
-    avatar_url: '',
-    created_at: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
-    status: 'active',
-    phone: '(21) 99345-6677',
-    target_monthly: 5,
-  },
-  {
-    id: 'usr-estacio-beatriz',
-    name: 'beatriz.costa',
-    email: 'beatriz.costa@estacio.br',
-    role: 'seller',
-    avatar_url: '',
-    created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-    status: 'active',
-    phone: '(21) 99887-1122',
-    target_monthly: 5,
-  },
-  {
-    id: 'usr-estacio-mariana',
-    name: 'mariana.silva',
-    email: 'mariana.silva@estacio.br',
-    role: 'seller',
-    avatar_url: '',
-    created_at: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
-    status: 'active',
-    phone: '(21) 97744-5566',
-    target_monthly: 5,
-  },
-  {
-    id: 'usr-estacio-bruno',
-    name: 'bruno.santos',
-    email: 'bruno.santos@estacio.br',
-    role: 'seller',
-    avatar_url: '',
-    created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    status: 'active',
-    phone: '(21) 98855-4433',
-    target_monthly: 5,
-  },
-  {
-    id: 'usr-estacio-camila',
-    name: 'camila.rodrigues',
-    email: 'camila.rodrigues@estacio.br',
-    role: 'seller',
-    avatar_url: '',
-    created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    status: 'active',
-    phone: '(21) 99933-2211',
-    target_monthly: 5,
   }
 ];
 
@@ -179,628 +91,7 @@ export const INITIAL_CAMPAIGNS: Campaign[] = [
   }
 ];
 
-export const INITIAL_SALES: Sale[] = [
-  {
-    id: 'sale-spr-001',
-    campaign_id: 'camp-q1-2026',
-    campaign_name: 'Campanha Acelera Vendas Q1',
-    seller_id: 'usr-seller-bruna',
-    seller_name: 'Bruna',
-    seller_email: 'bruna@r9corp.com.br',
-    client_name: 'ANTHONY LINCON VAL',
-    client_phone: '(11) 98711-2233',
-    client_email: 'anthony.val@gmail.com',
-    product_name: 'Graduação - Presencial (Manhã)',
-    value: 1250,
-    payment_method: 'PIX',
-    status: 'Aprovada',
-    commission: 62.5,
-    notes: 'Aluno Fies',
-    created_at: new Date('2026-09-01T09:15:00Z').toISOString(),
-    custom_data: {
-      opportunity_number: '955434274',
-      candidate_name: 'ANTHONY LINCON VAL',
-      sale_date: '01/09/2026',
-      main_product: 'Graduação',
-      business_unit: 'BU Presencial',
-      fdi_channel: 'Transferência Externa',
-      modality: 'Presencial',
-      shift: 'Manhã',
-      parcela_leve: 'Sem parcelas',
-      has_bolsa_convenio: false,
-      empresa_convenio: ''
-    }
-  },
-  {
-    id: 'sale-spr-002',
-    campaign_id: 'camp-q1-2026',
-    campaign_name: 'Campanha Acelera Vendas Q1',
-    seller_id: 'usr-seller-luiza',
-    seller_name: 'Luiza',
-    seller_email: 'luiza@r9corp.com.br',
-    client_name: 'Bruna Silva Luciano',
-    client_phone: '(11) 99122-3344',
-    client_email: 'bruna.luciano@outlook.com',
-    product_name: 'Graduação - Semipresencial (Noite)',
-    value: 950,
-    payment_method: 'PIX',
-    status: 'Aprovada',
-    commission: 47.5,
-    notes: '',
-    created_at: new Date('2026-09-01T09:30:00Z').toISOString(),
-    custom_data: {
-      opportunity_number: '955551577',
-      candidate_name: 'Bruna Silva Luciano',
-      sale_date: '01/09/2026',
-      main_product: 'Graduação',
-      business_unit: 'BU Presencial',
-      fdi_channel: 'Simplificada',
-      modality: 'Semipresencial',
-      shift: 'Noite',
-      parcela_leve: '3 parcelas',
-      has_bolsa_convenio: false,
-      empresa_convenio: ''
-    }
-  },
-  {
-    id: 'sale-spr-003',
-    campaign_id: 'camp-q1-2026',
-    campaign_name: 'Campanha Acelera Vendas Q1',
-    seller_id: 'usr-seller-caique',
-    seller_name: 'Caíque',
-    seller_email: 'caique@r9corp.com.br',
-    client_name: 'ana carolina ferreira de',
-    client_phone: '(21) 98877-6655',
-    client_email: 'ana.ferreira@gmail.com',
-    product_name: 'Graduação - Semipresencial (Noite)',
-    value: 950,
-    payment_method: 'PIX',
-    status: 'Aprovada',
-    commission: 47.5,
-    notes: '',
-    created_at: new Date('2026-09-01T10:00:00Z').toISOString(),
-    custom_data: {
-      opportunity_number: '955551818',
-      candidate_name: 'ana carolina ferreira de',
-      sale_date: '01/09/2026',
-      main_product: 'Graduação',
-      business_unit: 'BU Presencial',
-      fdi_channel: 'Simplificada',
-      modality: 'Semipresencial',
-      shift: 'Noite',
-      parcela_leve: '3 parcelas',
-      has_bolsa_convenio: false,
-      empresa_convenio: ''
-    }
-  },
-  {
-    id: 'sale-spr-004',
-    campaign_id: 'camp-q1-2026',
-    campaign_name: 'Campanha Acelera Vendas Q1',
-    seller_id: 'usr-seller-giovanna',
-    seller_name: 'Giovanna',
-    seller_email: 'giovanna@r9corp.com.br',
-    client_name: 'ruth germano de lucen',
-    client_phone: '(41) 99844-3322',
-    client_email: 'ruth.germano@gmail.com',
-    product_name: 'Graduação - EAD (Virtual)',
-    value: 650,
-    payment_method: 'PIX',
-    status: 'Aprovada',
-    commission: 32.5,
-    notes: '',
-    created_at: new Date('2026-09-01T10:20:00Z').toISOString(),
-    custom_data: {
-      opportunity_number: '955552012',
-      candidate_name: 'ruth germano de lucen',
-      sale_date: '01/09/2026',
-      main_product: 'Graduação',
-      business_unit: 'BU Digital',
-      fdi_channel: 'Simplificada',
-      modality: 'EAD',
-      shift: 'Virtual',
-      parcela_leve: '3 parcelas',
-      has_bolsa_convenio: false,
-      empresa_convenio: ''
-    }
-  },
-  {
-    id: 'sale-spr-005',
-    campaign_id: 'camp-q1-2026',
-    campaign_name: 'Campanha Acelera Vendas Q1',
-    seller_id: 'usr-seller-giovanna',
-    seller_name: 'Giovanna',
-    seller_email: 'giovanna@r9corp.com.br',
-    client_name: 'JUDITH da costa lopes',
-    client_phone: '(11) 97755-4433',
-    client_email: 'judith.costa@uol.com.br',
-    product_name: 'Pós Graduação - Ao Vivo (Noite)',
-    value: 1600,
-    payment_method: 'PIX',
-    status: 'Aprovada',
-    commission: 80.0,
-    notes: '',
-    created_at: new Date('2026-09-01T10:45:00Z').toISOString(),
-    custom_data: {
-      opportunity_number: '955552009',
-      candidate_name: 'JUDITH da costa lopes',
-      sale_date: '01/09/2026',
-      main_product: 'Pós Graduação',
-      business_unit: 'BU Presencial',
-      fdi_channel: 'Pós Graduação',
-      modality: 'Ao Vivo',
-      shift: 'Noite',
-      parcela_leve: 'Sem parcelas',
-      has_bolsa_convenio: false,
-      empresa_convenio: ''
-    }
-  },
-  {
-    id: 'sale-spr-006',
-    campaign_id: 'camp-q1-2026',
-    campaign_name: 'Campanha Acelera Vendas Q1',
-    seller_id: 'usr-seller-bruna',
-    seller_name: 'Bruna',
-    seller_email: 'bruna@r9corp.com.br',
-    client_name: 'JADER JUAN DA SILVA L',
-    client_phone: '(31) 98765-4321',
-    client_email: 'jader.silva@gmail.com',
-    product_name: 'Graduação - Semipresencial (Noite)',
-    value: 950,
-    payment_method: 'PIX',
-    status: 'Aprovada',
-    commission: 47.5,
-    notes: '',
-    created_at: new Date('2026-09-01T11:00:00Z').toISOString(),
-    custom_data: {
-      opportunity_number: '955552481',
-      candidate_name: 'JADER JUAN DA SILVA L',
-      sale_date: '01/09/2026',
-      main_product: 'Graduação',
-      business_unit: 'BU Presencial',
-      fdi_channel: 'Simplificada',
-      modality: 'Semipresencial',
-      shift: 'Noite',
-      parcela_leve: '3 parcelas',
-      has_bolsa_convenio: false,
-      empresa_convenio: ''
-    }
-  },
-  {
-    id: 'sale-spr-007',
-    campaign_id: 'camp-q1-2026',
-    campaign_name: 'Campanha Acelera Vendas Q1',
-    seller_id: 'usr-seller-bruna',
-    seller_name: 'Bruna',
-    seller_email: 'bruna@r9corp.com.br',
-    client_name: 'Erica CRISTINA PINHEIR',
-    client_phone: '(11) 99344-8899',
-    client_email: 'erica.pinheiro@gmail.com',
-    product_name: 'Pós Graduação - Pós Presencial (Virtual)',
-    value: 1850,
-    payment_method: 'PIX',
-    status: 'Aprovada',
-    commission: 92.5,
-    notes: '',
-    created_at: new Date('2026-09-01T11:30:00Z').toISOString(),
-    custom_data: {
-      opportunity_number: '955552929',
-      candidate_name: 'Erica CRISTINA PINHEIR',
-      sale_date: '01/09/2026',
-      main_product: 'Pós Graduação',
-      business_unit: 'BU Presencial',
-      fdi_channel: 'Pós Graduação',
-      modality: 'Pós Presencial',
-      shift: 'Virtual',
-      parcela_leve: 'Sem parcelas',
-      has_bolsa_convenio: false,
-      empresa_convenio: ''
-    }
-  },
-  {
-    id: 'sale-spr-008',
-    campaign_id: 'camp-q1-2026',
-    campaign_name: 'Campanha Acelera Vendas Q1',
-    seller_id: 'usr-seller-giovanna',
-    seller_name: 'Giovanna',
-    seller_email: 'giovanna@r9corp.com.br',
-    client_name: 'Patricia de Araújo Quar',
-    client_phone: '(21) 98111-3322',
-    client_email: 'patricia.araujo@dimagem.com.br',
-    product_name: 'Graduação - Ao Vivo (Noite)',
-    value: 1100,
-    payment_method: 'PIX',
-    status: 'Aprovada',
-    commission: 55.0,
-    notes: '',
-    created_at: new Date('2026-09-01T11:45:00Z').toISOString(),
-    custom_data: {
-      opportunity_number: '955553042',
-      candidate_name: 'Patricia de Araújo Quar',
-      sale_date: '01/09/2026',
-      main_product: 'Graduação',
-      business_unit: 'BU Presencial',
-      fdi_channel: 'Simplificada',
-      modality: 'Ao Vivo',
-      shift: 'Noite',
-      parcela_leve: '3 parcelas',
-      has_bolsa_convenio: true,
-      empresa_convenio: 'DIMAGEM DIAGNOSTIK'
-    }
-  },
-  {
-    id: 'sale-spr-009',
-    campaign_id: 'camp-q1-2026',
-    campaign_name: 'Campanha Acelera Vendas Q1',
-    seller_id: 'usr-seller-giovanna',
-    seller_name: 'Giovanna',
-    seller_email: 'giovanna@r9corp.com.br',
-    client_name: 'Jessica SIQUEIRA SILVA',
-    client_phone: '(41) 98455-6677',
-    client_email: 'jessica.siqueira@gmail.com',
-    product_name: 'Graduação - EAD (Virtual)',
-    value: 650,
-    payment_method: 'PIX',
-    status: 'Aprovada',
-    commission: 32.5,
-    notes: '',
-    created_at: new Date('2026-09-01T12:00:00Z').toISOString(),
-    custom_data: {
-      opportunity_number: '955553498',
-      candidate_name: 'Jessica SIQUEIRA SILVA',
-      sale_date: '01/09/2026',
-      main_product: 'Graduação',
-      business_unit: 'BU Digital',
-      fdi_channel: 'Simplificada',
-      modality: 'EAD',
-      shift: 'Virtual',
-      parcela_leve: '3 parcelas',
-      has_bolsa_convenio: false,
-      empresa_convenio: ''
-    }
-  },
-  {
-    id: 'sale-spr-010',
-    campaign_id: 'camp-q1-2026',
-    campaign_name: 'Campanha Acelera Vendas Q1',
-    seller_id: 'usr-seller-luiza',
-    seller_name: 'Luiza',
-    seller_email: 'luiza@r9corp.com.br',
-    client_name: 'Marcus Vinicius Ramos',
-    client_phone: '(11) 97123-4567',
-    client_email: 'marcus.ramos@hotmail.com',
-    product_name: 'Graduação - Semipresencial (Noite)',
-    value: 950,
-    payment_method: 'PIX',
-    status: 'Aprovada',
-    commission: 47.5,
-    notes: '',
-    created_at: new Date('2026-09-01T12:30:00Z').toISOString(),
-    custom_data: {
-      opportunity_number: '955552480',
-      candidate_name: 'Marcus Vinicius Ramos',
-      sale_date: '01/09/2026',
-      main_product: 'Graduação',
-      business_unit: 'BU Presencial',
-      fdi_channel: 'Simplificada',
-      modality: 'Semipresencial',
-      shift: 'Noite',
-      parcela_leve: 'Sem parcelas',
-      has_bolsa_convenio: false,
-      empresa_convenio: ''
-    }
-  },
-  {
-    id: 'sale-spr-011',
-    campaign_id: 'camp-q1-2026',
-    campaign_name: 'Campanha Acelera Vendas Q1',
-    seller_id: 'usr-seller-guilherme',
-    seller_name: 'Guilherme',
-    seller_email: 'guilherme@r9corp.com.br',
-    client_name: 'Angela Aparecida Reis',
-    client_phone: '(11) 98844-2211',
-    client_email: 'angela.reis@gmail.com',
-    product_name: 'Graduação - Presencial (Noite)',
-    value: 1250,
-    payment_method: 'PIX',
-    status: 'Aprovada',
-    commission: 62.5,
-    notes: 'transposição',
-    created_at: new Date('2026-09-01T13:00:00Z').toISOString(),
-    custom_data: {
-      opportunity_number: '955551960',
-      candidate_name: 'Angela Aparecida Reis',
-      sale_date: '01/09/2026',
-      main_product: 'Graduação',
-      business_unit: 'BU Presencial',
-      fdi_channel: 'Simplificada',
-      modality: 'Presencial',
-      shift: 'Noite',
-      parcela_leve: 'Sem parcelas',
-      has_bolsa_convenio: false,
-      empresa_convenio: ''
-    }
-  },
-  {
-    id: 'sale-spr-012',
-    campaign_id: 'camp-q1-2026',
-    campaign_name: 'Campanha Acelera Vendas Q1',
-    seller_id: 'usr-seller-giovanna',
-    seller_name: 'Giovanna',
-    seller_email: 'giovanna@r9corp.com.br',
-    client_name: 'Juliana Moreira de Sant',
-    client_phone: '(11) 98711-9988',
-    client_email: 'juliana.santos@gmail.com',
-    product_name: 'Graduação - Semipresencial (Noite)',
-    value: 950,
-    payment_method: 'PIX',
-    status: 'Aprovada',
-    commission: 47.5,
-    notes: '',
-    created_at: new Date('2026-09-01T13:30:00Z').toISOString(),
-    custom_data: {
-      opportunity_number: '955536099',
-      candidate_name: 'Juliana Moreira de Sant',
-      sale_date: '01/09/2026',
-      main_product: 'Graduação',
-      business_unit: 'BU Presencial',
-      fdi_channel: 'Simplificada',
-      modality: 'Semipresencial',
-      shift: 'Noite',
-      parcela_leve: '3 parcelas',
-      has_bolsa_convenio: false,
-      empresa_convenio: ''
-    }
-  },
-  {
-    id: 'sale-spr-013',
-    campaign_id: 'camp-q1-2026',
-    campaign_name: 'Campanha Acelera Vendas Q1',
-    seller_id: 'usr-seller-caique',
-    seller_name: 'Caíque',
-    seller_email: 'caique@r9corp.com.br',
-    client_name: 'Rannan Villela Abreu',
-    client_phone: '(21) 99822-1144',
-    client_email: 'rannan.abreu@gmail.com',
-    product_name: 'Graduação - Semipresencial (Manhã)',
-    value: 950,
-    payment_method: 'PIX',
-    status: 'Aprovada',
-    commission: 47.5,
-    notes: '',
-    created_at: new Date('2026-09-01T14:00:00Z').toISOString(),
-    custom_data: {
-      opportunity_number: '955553742',
-      candidate_name: 'Rannan Villela Abreu',
-      sale_date: '01/09/2026',
-      main_product: 'Graduação',
-      business_unit: 'BU Presencial',
-      fdi_channel: 'Simplificada',
-      modality: 'Semipresencial',
-      shift: 'Manhã',
-      parcela_leve: '1 parcela',
-      has_bolsa_convenio: false,
-      empresa_convenio: ''
-    }
-  },
-  {
-    id: 'sale-spr-014',
-    campaign_id: 'camp-q1-2026',
-    campaign_name: 'Campanha Acelera Vendas Q1',
-    seller_id: 'usr-seller-bruna',
-    seller_name: 'Bruna',
-    seller_email: 'bruna@r9corp.com.br',
-    client_name: 'Pablo Nogueira de Carv',
-    client_phone: '(11) 99344-2211',
-    client_email: 'pablo.carvalho@gmail.com',
-    product_name: 'Graduação - Semipresencial (Noite)',
-    value: 950,
-    payment_method: 'PIX',
-    status: 'Aprovada',
-    commission: 47.5,
-    notes: '',
-    created_at: new Date('2026-09-01T14:30:00Z').toISOString(),
-    custom_data: {
-      opportunity_number: '955552252',
-      candidate_name: 'Pablo Nogueira de Carv',
-      sale_date: '01/09/2026',
-      main_product: 'Graduação',
-      business_unit: 'BU Presencial',
-      fdi_channel: 'Simplificada',
-      modality: 'Semipresencial',
-      shift: 'Noite',
-      parcela_leve: 'Sem parcelas',
-      has_bolsa_convenio: false,
-      empresa_convenio: ''
-    }
-  },
-  {
-    id: 'sale-spr-015',
-    campaign_id: 'camp-q1-2026',
-    campaign_name: 'Campanha Acelera Vendas Q1',
-    seller_id: 'usr-seller-maria',
-    seller_name: 'Maria',
-    seller_email: 'maria@r9corp.com.br',
-    client_name: 'Erick Fernando Alves Ca',
-    client_phone: '(31) 98765-1100',
-    client_email: 'erick.alves@gmail.com',
-    product_name: 'Graduação - Semipresencial (Noite)',
-    value: 950,
-    payment_method: 'PIX',
-    status: 'Aprovada',
-    commission: 47.5,
-    notes: '',
-    created_at: new Date('2026-09-01T15:00:00Z').toISOString(),
-    custom_data: {
-      opportunity_number: '955544590',
-      candidate_name: 'Erick Fernando Alves Ca',
-      sale_date: '01/09/2026',
-      main_product: 'Graduação',
-      business_unit: 'BU Presencial',
-      fdi_channel: 'Simplificada',
-      modality: 'Semipresencial',
-      shift: 'Noite',
-      parcela_leve: '3 parcelas',
-      has_bolsa_convenio: false,
-      empresa_convenio: ''
-    }
-  },
-  {
-    id: 'sale-spr-016',
-    campaign_id: 'camp-q1-2026',
-    campaign_name: 'Campanha Acelera Vendas Q1',
-    seller_id: 'usr-seller-bruna',
-    seller_name: 'Bruna',
-    seller_email: 'bruna@r9corp.com.br',
-    client_name: 'Maria Gabriela Souza d',
-    client_phone: '(11) 98111-4455',
-    client_email: 'maria.souza@gmail.com',
-    product_name: 'Pós Graduação - Pós Presencial (Noite)',
-    value: 1850,
-    payment_method: 'PIX',
-    status: 'Aprovada',
-    commission: 92.5,
-    notes: '',
-    created_at: new Date('2026-09-01T15:30:00Z').toISOString(),
-    custom_data: {
-      opportunity_number: '955502031',
-      candidate_name: 'Maria Gabriela Souza d',
-      sale_date: '01/09/2026',
-      main_product: 'Pós Graduação',
-      business_unit: 'BU Presencial',
-      fdi_channel: 'Pós Graduação',
-      modality: 'Pós Presencial',
-      shift: 'Noite',
-      parcela_leve: 'Sem parcelas',
-      has_bolsa_convenio: false,
-      empresa_convenio: ''
-    }
-  },
-  {
-    id: 'sale-spr-017',
-    campaign_id: 'camp-q1-2026',
-    campaign_name: 'Campanha Acelera Vendas Q1',
-    seller_id: 'usr-seller-luiza',
-    seller_name: 'Luiza',
-    seller_email: 'luiza@r9corp.com.br',
-    client_name: 'Brenno Marcos de Oliv',
-    client_phone: '(21) 98777-3322',
-    client_email: 'brenno.oliveira@colegio.com.br',
-    product_name: 'Graduação - Presencial (Manhã)',
-    value: 1250,
-    payment_method: 'PIX',
-    status: 'Aprovada',
-    commission: 62.5,
-    notes: '',
-    created_at: new Date('2026-09-01T16:00:00Z').toISOString(),
-    custom_data: {
-      opportunity_number: '955530409',
-      candidate_name: 'Brenno Marcos de Oliv',
-      sale_date: '01/09/2026',
-      main_product: 'Graduação',
-      business_unit: 'BU Presencial',
-      fdi_channel: 'Transferência Externa',
-      modality: 'Presencial',
-      shift: 'Manhã',
-      parcela_leve: 'Sem parcelas',
-      has_bolsa_convenio: true,
-      empresa_convenio: 'Colegio'
-    }
-  },
-  {
-    id: 'sale-spr-018',
-    campaign_id: 'camp-q1-2026',
-    campaign_name: 'Campanha Acelera Vendas Q1',
-    seller_id: 'usr-seller-giovanna',
-    seller_name: 'Giovanna',
-    seller_email: 'giovanna@r9corp.com.br',
-    client_name: 'Hugo Neves Carvalho',
-    client_phone: '(41) 99888-7766',
-    client_email: 'hugo.neves@gmail.com',
-    product_name: 'Graduação - Ao Vivo (Noite)',
-    value: 1100,
-    payment_method: 'PIX',
-    status: 'Aprovada',
-    commission: 55.0,
-    notes: '',
-    created_at: new Date('2026-09-02T09:00:00Z').toISOString(),
-    custom_data: {
-      opportunity_number: '955556002',
-      candidate_name: 'Hugo Neves Carvalho',
-      sale_date: '02/09/2026',
-      main_product: 'Graduação',
-      business_unit: 'BU Presencial',
-      fdi_channel: 'Simplificada',
-      modality: 'Ao Vivo',
-      shift: 'Noite',
-      parcela_leve: 'Sem parcelas',
-      has_bolsa_convenio: false,
-      empresa_convenio: ''
-    }
-  },
-  {
-    id: 'sale-spr-019',
-    campaign_id: 'camp-q1-2026',
-    campaign_name: 'Campanha Acelera Vendas Q1',
-    seller_id: 'usr-seller-giovanna',
-    seller_name: 'Giovanna',
-    seller_email: 'giovanna@r9corp.com.br',
-    client_name: 'Giovanna Moraes da Co',
-    client_phone: '(11) 98444-5566',
-    client_email: 'giovanna.moraes@gmail.com',
-    product_name: 'Graduação - Semipresencial (Manhã)',
-    value: 950,
-    payment_method: 'PIX',
-    status: 'Aprovada',
-    commission: 47.5,
-    notes: '',
-    created_at: new Date('2026-09-02T09:30:00Z').toISOString(),
-    custom_data: {
-      opportunity_number: '954875963',
-      candidate_name: 'Giovanna Moraes da Co',
-      sale_date: '02/09/2026',
-      main_product: 'Graduação',
-      business_unit: 'BU Presencial',
-      fdi_channel: 'Simplificada',
-      modality: 'Semipresencial',
-      shift: 'Manhã',
-      parcela_leve: '3 parcelas',
-      has_bolsa_convenio: false,
-      empresa_convenio: ''
-    }
-  },
-  {
-    id: 'sale-spr-020',
-    campaign_id: 'camp-q1-2026',
-    campaign_name: 'Campanha Acelera Vendas Q1',
-    seller_id: 'usr-seller-luiza',
-    seller_name: 'Luiza',
-    seller_email: 'luiza@r9corp.com.br',
-    client_name: 'Mario lucio do nascime',
-    client_phone: '(21) 97788-9900',
-    client_email: 'mario.nascimento@gmail.com',
-    product_name: 'Graduação - EAD (Virtual)',
-    value: 650,
-    payment_method: 'PIX',
-    status: 'Aprovada',
-    commission: 32.5,
-    notes: '',
-    created_at: new Date('2026-09-02T10:00:00Z').toISOString(),
-    custom_data: {
-      opportunity_number: '955556525',
-      candidate_name: 'Mario lucio do nascime',
-      sale_date: '02/09/2026',
-      main_product: 'Graduação',
-      business_unit: 'BU Digital',
-      fdi_channel: 'Simplificada',
-      modality: 'EAD',
-      shift: 'Virtual',
-      parcela_leve: 'Sem parcelas',
-      has_bolsa_convenio: false,
-      empresa_convenio: ''
-    }
-  }
-];
+export const INITIAL_SALES: Sale[] = [];
 
 // Supabase SQL Setup Script for user convenience
 export const SUPABASE_SQL_SCHEMA = `-- ============================================================
@@ -970,10 +261,39 @@ export function getSupabaseClient(): SupabaseClient | null {
 
 // Local Storage Sync Engine for seamless, 100% resilient operation
 export class LocalSyncEngine {
+  private static purged = false;
+  private static ensurePurged() {
+    if (this.purged) return;
+    try {
+      // Limpa dados legados de demonstração anteriores
+      localStorage.removeItem('salesflow_sales_v1');
+      localStorage.removeItem('salesflow_sales_v2');
+      localStorage.removeItem('salesflow_profiles_v1');
+      localStorage.removeItem('salesflow_profiles_v2');
+      localStorage.removeItem('salesflow_profiles_v3');
+      localStorage.removeItem('salesflow_current_user_v1');
+      localStorage.removeItem('salesflow_current_user_v2');
+      localStorage.removeItem('salesflow_current_user_v3');
+      this.purged = true;
+    } catch {
+      this.purged = true;
+    }
+  }
+
   static getProfiles(): Profile[] {
+    this.ensurePurged();
     try {
       const stored = localStorage.getItem(LOCAL_PROFILES_KEY);
-      if (stored) return JSON.parse(stored);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Se tiver apenas os usuários antigos de teste da Estácio, limpa e deixa só o Daniel Marques
+          const hasOldDemoSellers = parsed.some((p: Profile) => p.id === 'usr-estacio-guilherme' || p.id === 'usr-estacio-kathlen');
+          if (!hasOldDemoSellers) {
+            return parsed;
+          }
+        }
+      }
       localStorage.setItem(LOCAL_PROFILES_KEY, JSON.stringify(INITIAL_PROFILES));
       return INITIAL_PROFILES;
     } catch {
@@ -1009,13 +329,23 @@ export class LocalSyncEngine {
   }
 
   static getSales(): Sale[] {
+    this.ensurePurged();
     try {
       const stored = localStorage.getItem(LOCAL_SALES_KEY);
-      if (stored) return JSON.parse(stored);
-      localStorage.setItem(LOCAL_SALES_KEY, JSON.stringify(INITIAL_SALES));
-      return INITIAL_SALES;
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          // Se houver vendas antigas de teste (ex: id sale-spr-001), limpa
+          const hasOldDemoSales = parsed.some((s: Sale) => s.id?.startsWith('sale-spr-'));
+          if (!hasOldDemoSales) {
+            return parsed;
+          }
+        }
+      }
+      localStorage.setItem(LOCAL_SALES_KEY, JSON.stringify([]));
+      return [];
     } catch {
-      return INITIAL_SALES;
+      return [];
     }
   }
 
@@ -1028,10 +358,15 @@ export class LocalSyncEngine {
   }
 
   static getCurrentUser(): Profile | null {
+    this.ensurePurged();
     try {
       const stored = localStorage.getItem(LOCAL_CURRENT_USER_KEY);
-      if (stored) return JSON.parse(stored);
-      // Default to admin or seller on first load
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && (parsed.id === 'usr-estacio-daniel' || parsed.email?.includes('danie'))) {
+          return parsed;
+        }
+      }
       return INITIAL_PROFILES[0];
     } catch {
       return INITIAL_PROFILES[0];
@@ -1047,6 +382,23 @@ export class LocalSyncEngine {
       }
     } catch (e) {
       console.error('Failed to save current user', e);
+    }
+  }
+
+  static clearAllSales() {
+    try {
+      localStorage.setItem(LOCAL_SALES_KEY, JSON.stringify([]));
+    } catch (e) {
+      console.error('Failed to clear sales locally', e);
+    }
+  }
+
+  static resetUsersToAdminOnly() {
+    try {
+      localStorage.setItem(LOCAL_PROFILES_KEY, JSON.stringify(INITIAL_PROFILES));
+      localStorage.setItem(LOCAL_CURRENT_USER_KEY, JSON.stringify(INITIAL_PROFILES[0]));
+    } catch (e) {
+      console.error('Failed to reset profiles locally', e);
     }
   }
 }
